@@ -9,9 +9,13 @@ EOS
   raise
 end
 
+gemlib = ENV['MRUBYGEM'] ? '/../mrblib': '/../../lib'
+
+FileUtils.cd(File.dirname(__FILE__))
+  
 require File.dirname(__FILE__) + '/oraconf'
 require File.dirname(__FILE__) + '/apiwrap'
-require File.dirname(__FILE__) + '/../mrblib/oci8/oracle_version.rb'
+require File.dirname(__FILE__) + "#{gemlib}/oci8/oracle_version.rb"
 
 RUBY_OCI8_VERSION = File.read("#{File.dirname(__FILE__)}/../VERSION").chomp
 
@@ -104,6 +108,7 @@ end
 
 have_func("localtime_r")
 
+unless ENV['MRUBYGEM']
 # ruby 1.8 headers
 have_header("intern.h")
 have_header("util.h")
@@ -121,7 +126,7 @@ have_func("rb_set_end_proc", "ruby.h")
 have_func("rb_class_superclass", "ruby.h")
 have_func("rb_thread_blocking_region", "ruby.h")
 have_func("rb_thread_call_without_gvl", "ruby/thread.h")
-
+end
 # replace files
 replace = {
   'OCI8_CLIENT_VERSION' => oraconf.version,
@@ -129,7 +134,7 @@ replace = {
 }
 
 # make ruby script before running create_makefile.
-replace_keyword(File.dirname(__FILE__) + '/../../lib/oci8.rb.in', '../../lib/oci8.rb', replace)
+replace_keyword(File.dirname(__FILE__) + "#{gemlib}/oci8.rb.in", File.dirname(__FILE__) + "#{gemlib}/oci8.rb", replace)
 
 ruby_engine = (defined? RUBY_ENGINE) ? RUBY_ENGINE : 'ruby'
 

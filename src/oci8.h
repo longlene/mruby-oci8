@@ -7,7 +7,9 @@
 #ifndef _RUBY_OCI_H_
 #define _RUBY_OCI_H_ 1
 
-#include "ruby.h"
+#include "mruby.h"
+#include "mruby/string.h"
+#include "rtom.h"
 
 #ifndef rb_pid_t
 #ifdef WIN32
@@ -100,6 +102,8 @@ typedef struct OCIMsg  OCIMsg;
 typedef struct OCICPool OCICPool;
 #endif
 
+#ifndef MRUBY_H
+
 /* new macros in ruby 1.8.6.
  * define compatible macros for ruby 1.8.5 or lower.
  */
@@ -181,6 +185,8 @@ static inline volatile VALUE *rb_gc_guarded_ptr(volatile VALUE *ptr) {return ptr
  */
 #define USE_THREAD_LOCAL_ERRHP 1
 #endif
+
+#endif /* MRUBY_H */
 
 /* macros depends on the compiler.
  *  LIKELY(x)      hint for the compiler that 'x' is 1(TRUE) in many cases.

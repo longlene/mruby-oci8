@@ -60,5 +60,5 @@ VALUE oci8_get_rowid_attr(oci8_base_t *base, ub4 attrtype, OCIStmt *stmtp)
     arg.stmtp = stmtp;
     arg.attrtype = attrtype;
     arg.ridp = NULL;
-    return rb_ensure(get_rowid_attr, (VALUE)&arg, rowid_ensure, (VALUE)&arg);
+    return rb_ensure(get_rowid_attr, &arg, rowid_ensure, &arg);
 }

@@ -16,3 +16,13 @@ tmp
 .yardoc
 _yardoc
 doc/
+
+# ruby-oci8 artifacts
+
+mrblib/oci8.rb
+src/Makefile
+src/apiwrap.c
+src/apiwrap.h
+src/depend
+src/extconf.h
+src/mkmf.log

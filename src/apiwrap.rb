@@ -76,12 +76,12 @@ EOS
 #'
 
   erb = ERB.new(open(File.dirname(__FILE__) + '/apiwrap.h.tmpl').read)
-  open('apiwrap.h', 'w') do |fd|
+  open(File.dirname(__FILE__) + '/apiwrap.h', 'w') do |fd|
     fd.write(erb.result(binding))
   end
 
   erb = ERB.new(open(File.dirname(__FILE__) + '/apiwrap.c.tmpl').read)
-  open('apiwrap.c', 'w') do |fd|
+  open(File.dirname(__FILE__) + '/apiwrap.c', 'w') do |fd|
     fd.write(erb.result(binding))
   end
 end
