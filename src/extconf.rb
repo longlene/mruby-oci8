@@ -11,9 +11,9 @@ end
 
 require File.dirname(__FILE__) + '/oraconf'
 require File.dirname(__FILE__) + '/apiwrap'
-require File.dirname(__FILE__) + '/../../lib/oci8/oracle_version.rb'
+require File.dirname(__FILE__) + '/../mrblib/oci8/oracle_version.rb'
 
-RUBY_OCI8_VERSION = File.read("#{File.dirname(__FILE__)}/../../VERSION").chomp
+RUBY_OCI8_VERSION = File.read("#{File.dirname(__FILE__)}/../VERSION").chomp
 
 oraconf = OraConf.get()
 
