@@ -4,6 +4,7 @@
  *
  * Copyright (C) 2002-2011 KUBO Takehiro <kubo@jiubao.org>
  */
+#include <string.h>
 #include "oci8.h"
 
 #ifndef OCI_ATTR_MAXCHAR_SIZE
@@ -64,7 +65,7 @@ static void bind_string_init(oci8_bind_t *obind, VALUE svc, VALUE val, VALUE par
     if (sz < 0) {
         rb_raise(rb_eArgError, "invalid bind length %d", sz);
     }
-    if (length_semantics == sym_char) {
+    if (RB_EQUAL(length_semantics,sym_char)) {
         /* character semantics */
         obs->charlen = sz;
         obs->bytelen = sz = sz * oci8_nls_ratio;
@@ -206,6 +207,13 @@ static VALUE oci8_bind_get(VALUE self)
     return vptr->get(obind, (void*)((size_t)obind->valuep + obind->alloc_sz * idx), null_structp);
 }
 
+#ifdef MRUBY_H
+static VALUE mrb_oci8_bind_get(mrb_state *mrb, mrb_value self)
+{
+  return oci8_bind_get(self);
+}
+#endif
+
 static VALUE oci8_bind_get_data(VALUE self)
 {
     oci8_bind_t *obind = DATA_PTR(self);
@@ -224,6 +232,13 @@ static VALUE oci8_bind_get_data(VALUE self)
         return ary;
     }
 }
+
+#ifdef MRUBY_H
+static VALUE mrb_oci8_bind_get_data(mrb_state *mrb, mrb_value self)
+{
+  return oci8_bind_get_data(self);
+}
+#endif
 
 static VALUE oci8_bind_set(VALUE self, VALUE val)
 {
@@ -252,6 +267,15 @@ static VALUE oci8_bind_set(VALUE self, VALUE val)
     return self;
 }
 
+#ifdef MRUBY_H
+static VALUE mrb_oci8_bind_set(mrb_state *mrb, mrb_value self)
+{
+  mrb_value val;
+  mrb_get_args(mrb, "o", &val);
+  return oci8_bind_set(self, val);
+}
+#endif
+
 static VALUE oci8_bind_set_data(VALUE self, VALUE val)
 {
     oci8_bind_t *obind = DATA_PTR(self);
@@ -276,6 +300,15 @@ static VALUE oci8_bind_set_data(VALUE self, VALUE val)
     }
     return self;
 }
+
+#ifdef MRUBY_H
+static VALUE mrb_oci8_bind_set_data(mrb_state *mrb, mrb_value self)
+{
+  mrb_value val;
+  mrb_get_args(mrb, "o", &val);
+  return oci8_bind_set_data(self, val);
+}
+#endif
 
 static VALUE oci8_bind_initialize(VALUE self, VALUE svc, VALUE val, VALUE length, VALUE max_array_size)
 {
@@ -310,6 +343,14 @@ static VALUE oci8_bind_initialize(VALUE self, VALUE svc, VALUE val, VALUE length
     }
     return Qnil;
 }
+
+#ifdef MRUBY_H
+static VALUE mrb_oci8_bind_initialize(mrb_state *mrb, VALUE self) {
+  mrb_value svc, val, length, max_array_size;
+  mrb_get_args(mrb, "oooo", &svc, &val, &length, &max_array_size);
+  return oci8_bind_initialize(self, svc, val, length, max_array_size);
+}
+#endif
 
 void oci8_bind_free(oci8_base_t *base)
 {
@@ -347,11 +388,11 @@ void Init_oci8_bind(VALUE klass)
     sym_char = ID2SYM(rb_intern("char"));
     sym_nchar = ID2SYM(rb_intern("nchar"));
 
-    rb_define_method(cOCI8BindTypeBase, "initialize", oci8_bind_initialize, 4);
-    rb_define_method(cOCI8BindTypeBase, "get", oci8_bind_get, 0);
-    rb_define_method(cOCI8BindTypeBase, "set", oci8_bind_set, 1);
-    rb_define_private_method(cOCI8BindTypeBase, "get_data", oci8_bind_get_data, 0);
-    rb_define_private_method(cOCI8BindTypeBase, "set_data", oci8_bind_set_data, 1);
+    rb_define_method(cOCI8BindTypeBase, "initialize", MRBFUNCT(oci8_bind_initialize), 4);
+    rb_define_method(cOCI8BindTypeBase, "get", MRBFUNCT(oci8_bind_get), 0);
+    rb_define_method(cOCI8BindTypeBase, "set", MRBFUNCT(oci8_bind_set), 1);
+    rb_define_private_method(cOCI8BindTypeBase, "get_data", MRBFUNCT(oci8_bind_get_data), 0);
+    rb_define_private_method(cOCI8BindTypeBase, "set_data", MRBFUNCT(oci8_bind_set_data), 1);
 
     /* register primitive data types. */
     oci8_define_bind_class("String", &bind_string_vtable);

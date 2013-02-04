@@ -7,8 +7,6 @@
 #ifndef _RUBY_OCI_H_
 #define _RUBY_OCI_H_ 1
 
-#include "mruby.h"
-#include "mruby/string.h"
 #include "rtom.h"
 
 #ifndef rb_pid_t
@@ -389,18 +387,23 @@ typedef struct {
     ub2 *alenp;
 } oci8_exec_sql_var_t;
 
+#define Check_Object(obj, klass) do {\
+  if (!rb_obj_is_kind_of(obj, klass)) { \
+    rb_raise(rb_eTypeError, "invalid argument %s (expect %s)", rb_class2name(CLASS_OF(obj)), rb_class2name(klass)); \
+  } \
+} while (0)
+
+#ifdef MRUBY_H
+static struct mrb_data_type mrb_oci8_base_type = { "OCI8", NULL };
+#define Check_Handle(obj, klass, hp) Data_Get_Struct(mrb, obj, &mrb_oci8_base_type, hp)
+#else
 #define Check_Handle(obj, klass, hp) do { \
     if (!rb_obj_is_kind_of(obj, klass)) { \
         rb_raise(rb_eTypeError, "invalid argument %s (expect %s)", rb_class2name(CLASS_OF(obj)), rb_class2name(klass)); \
     } \
     Data_Get_Struct(obj, oci8_base_t, hp); \
 } while (0)
-
-#define Check_Object(obj, klass) do {\
-  if (!rb_obj_is_kind_of(obj, klass)) { \
-    rb_raise(rb_eTypeError, "invalid argument %s (expect %s)", rb_class2name(CLASS_OF(obj)), rb_class2name(klass)); \
-  } \
-} while (0)
+#endif /* MRUBY_H */
 
 #define oci8_raise(err, status, stmt) oci8_do_raise(err, status, stmt, __FILE__, __LINE__)
 #define oci8_env_raise(err, status) oci8_do_env_raise(err, status, __FILE__, __LINE__)
