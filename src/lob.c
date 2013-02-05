@@ -279,6 +279,13 @@ static VALUE oci8_clob_initialize(int argc, VALUE *argv, VALUE self)
     return Qnil;
 }
 
+#ifdef MRUBY_H
+static VALUE mrb_oci8_clob_initialize(mrb_state *mrb, VALUE self)
+{
+  return oci8_clob_initialize(0, NULL, self);
+}
+#endif
+
 /*
  *  call-seq:
  *    initialize(conn, contents = nil)

@@ -394,7 +394,6 @@ typedef struct {
 } while (0)
 
 #ifdef MRUBY_H
-static struct mrb_data_type mrb_oci8_base_type = { "OCI8", NULL };
 #define Check_Handle(obj, klass, hp) Data_Get_Struct(mrb, obj, &mrb_oci8_base_type, hp)
 #else
 #define Check_Handle(obj, klass, hp) do { \

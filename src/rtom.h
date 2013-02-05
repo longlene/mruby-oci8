@@ -76,7 +76,6 @@ extern mrb_state *mrb;
 #define xfree(x) mrb_free(mrb, x)
 #define rb_gc_mark(x) mrb_gc_mark(mrb,mrb_basic(x))
 
-#define rb_define_method(klass, name, fn, argc) mrb_define_method(mrb, mrb_obj_class(mrb, klass), name, fn, argc)
 
 #define rb_define_private_method(k,n,f,a) rb_define_method(k,n,f,a)
 
@@ -89,6 +88,8 @@ extern mrb_state *mrb;
 /* Because C functions to be called from Ruby don't now contain the args
  * new ones must be written prefixed by mrb_. This macro converts calls.
  */
-#define MRBFUNCT(f) mrb_##f
+#define rb_define_method(klass, name, fn, argc) mrb_define_method(mrb, mrb_obj_class(mrb, klass), name, mrb_##fn, argc)
+
+#define rb_scan_args(argc,argv,fmt, ...) mrb_get_args(mrb, fmt, ##__VA_ARGS__)
 
 #endif /* RUBY_RTOM_h */

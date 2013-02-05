@@ -208,6 +208,8 @@ static VALUE oci8_bind_get(VALUE self)
 }
 
 #ifdef MRUBY_H
+static struct mrb_data_type mrb_oci8_base_type = { "OCI8", NULL };
+
 static VALUE mrb_oci8_bind_get(mrb_state *mrb, mrb_value self)
 {
   return oci8_bind_get(self);
@@ -388,11 +390,11 @@ void Init_oci8_bind(VALUE klass)
     sym_char = ID2SYM(rb_intern("char"));
     sym_nchar = ID2SYM(rb_intern("nchar"));
 
-    rb_define_method(cOCI8BindTypeBase, "initialize", MRBFUNCT(oci8_bind_initialize), 4);
-    rb_define_method(cOCI8BindTypeBase, "get", MRBFUNCT(oci8_bind_get), 0);
-    rb_define_method(cOCI8BindTypeBase, "set", MRBFUNCT(oci8_bind_set), 1);
-    rb_define_private_method(cOCI8BindTypeBase, "get_data", MRBFUNCT(oci8_bind_get_data), 0);
-    rb_define_private_method(cOCI8BindTypeBase, "set_data", MRBFUNCT(oci8_bind_set_data), 1);
+    rb_define_method(cOCI8BindTypeBase, "initialize", oci8_bind_initialize, 4);
+    rb_define_method(cOCI8BindTypeBase, "get", oci8_bind_get, 0);
+    rb_define_method(cOCI8BindTypeBase, "set", oci8_bind_set, 1);
+    rb_define_private_method(cOCI8BindTypeBase, "get_data", oci8_bind_get_data, 0);
+    rb_define_private_method(cOCI8BindTypeBase, "set_data", oci8_bind_set_data, 1);
 
     /* register primitive data types. */
     oci8_define_bind_class("String", &bind_string_vtable);
@@ -404,7 +406,7 @@ void Init_oci8_bind(VALUE klass)
 
 oci8_bind_t *oci8_get_bind(VALUE obj)
 {
-    oci8_base_t *base;
+    void *base;
     Check_Handle(obj, cOCI8BindTypeBase, base);
     return (oci8_bind_t *)base;
 }
