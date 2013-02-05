@@ -426,7 +426,7 @@ static VALUE oci8_lob_seek(int argc, VALUE *argv, VALUE self)
     VALUE position, whence;
 
     rb_scan_args(argc, argv, "11", &position, &whence);
-    if (argc == 2 && (whence != seek_set && whence != seek_cur && whence != seek_end)) {
+    if (argc == 2 && (RB_NE(whence,seek_set) && RB_NE(whence,seek_cur) && RB_NE(whence,seek_end))) {
         if (FIXNUM_P(whence)) {
             rb_raise(rb_eArgError, "expect IO::SEEK_SET, IO::SEEK_CUR or IO::SEEK_END but %d",
                      FIX2INT(whence));
@@ -435,7 +435,7 @@ static VALUE oci8_lob_seek(int argc, VALUE *argv, VALUE self)
                      rb_class2name(CLASS_OF(whence)));
         }
     }
-    if (whence == seek_cur) {
+    if (RB_EQ(whence,seek_cur)) {
         position = rb_funcall(UB4_TO_NUM(lob->pos), id_plus, 1, position);
     } else if (whence == seek_end) {
         position = rb_funcall(UB4_TO_NUM(oci8_lob_get_length(lob)), id_plus, 1, position);
@@ -443,6 +443,17 @@ static VALUE oci8_lob_seek(int argc, VALUE *argv, VALUE self)
     lob->pos = NUM2UINT(position);
     return self;
 }
+
+#ifdef MRUBY_H
+static VALUE mrb_oci8_lob_seek(VALUE self) 
+{
+  mrb_value val[2];
+
+  mrb_get_args(mrb, "i|i", &val[0], &val[1]);
+
+  return oci8_lob_seek(2,  val, VALUE self)
+}
+#endif
 
 /*
  *  Sets the current offset at the beginning.
@@ -620,6 +631,15 @@ static VALUE oci8_lob_read(int argc, VALUE *argv, VALUE self)
         return v;
     }
 }
+
+#ifdef MRUBY_H
+static mrb_value mrb_oci8_lob_read(mrb_value self)
+{
+  mrb_value argv;
+  int argc = mrb_scan_args("|i", &argv);
+  return oci8_lob_read(argc, &argv, VALUE self)
+}
+#endif
 
 /*
  *  call-seq:
@@ -827,6 +847,16 @@ static VALUE oci8_bfile_initialize(int argc, VALUE *argv, VALUE self)
     return Qnil;
 }
 
+#ifdef MRUBY_H
+static VALUE mrb_oci8_bfile_initialize(mrb_state *mrb, VALUE self)
+{
+  mrb_value argv[3];
+  mrb_int argc;
+
+  argc = mrb_get_args(mrb, "o|SS", &argv[0], &argv[1], &argv[2])
+  return oci8_bfile_initialize(argc, argv, VALUE self)
+}
+#endif
 /*
  *  Returns the directory object name.
  *

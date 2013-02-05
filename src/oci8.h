@@ -100,7 +100,21 @@ typedef struct OCIMsg  OCIMsg;
 typedef struct OCICPool OCICPool;
 #endif
 
-#ifndef MRUBY_H
+/* New macros for MRUBY */
+
+#ifdef MRUBY_H
+
+#define RB_EQ(a,b) mrb_equal(mrb,a,b)
+#define RB_NE(a,b) !mrb_equal(mrb,a,b)
+
+#define rb_usascii_str_new(ptr, len) mrb_str_new(mrb, (ptr), (len))
+
+#else
+
+#define RB_EQ(a,b) (a == b)
+#define RB_NE(a,b) (a != b)
+
+/* end MRUBY compatibility macros */
 
 /* new macros in ruby 1.8.6.
  * define compatible macros for ruby 1.8.5 or lower.

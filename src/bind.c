@@ -65,7 +65,7 @@ static void bind_string_init(oci8_bind_t *obind, VALUE svc, VALUE val, VALUE par
     if (sz < 0) {
         rb_raise(rb_eArgError, "invalid bind length %d", sz);
     }
-    if (RB_EQUAL(length_semantics,sym_char)) {
+    if (RB_EQ(length_semantics,sym_char)) {
         /* character semantics */
         obs->charlen = sz;
         obs->bytelen = sz = sz * oci8_nls_ratio;
@@ -210,7 +210,7 @@ static VALUE oci8_bind_get(VALUE self)
 #ifdef MRUBY_H
 static struct mrb_data_type mrb_oci8_base_type = { "OCI8", NULL };
 
-static VALUE mrb_oci8_bind_get(mrb_state *mrb, mrb_value self)
+static mrb_value mrb_oci8_bind_get(mrb_state *mrb, mrb_value self)
 {
   return oci8_bind_get(self);
 }
@@ -236,7 +236,7 @@ static VALUE oci8_bind_get_data(VALUE self)
 }
 
 #ifdef MRUBY_H
-static VALUE mrb_oci8_bind_get_data(mrb_state *mrb, mrb_value self)
+static mrb_value mrb_oci8_bind_get_data(mrb_state *mrb, mrb_value self)
 {
   return oci8_bind_get_data(self);
 }
