@@ -437,7 +437,7 @@ static VALUE oci8_lob_seek(int argc, VALUE *argv, VALUE self)
     }
     if (RB_EQ(whence,seek_cur)) {
         position = rb_funcall(UB4_TO_NUM(lob->pos), id_plus, 1, position);
-    } else if (whence == seek_end) {
+    } else if (RB_EQ(whence,seek_end)) {
         position = rb_funcall(UB4_TO_NUM(oci8_lob_get_length(lob)), id_plus, 1, position);
     }
     lob->pos = NUM2UINT(position);
@@ -451,7 +451,7 @@ static VALUE mrb_oci8_lob_seek(VALUE self)
 
   mrb_get_args(mrb, "i|i", &val[0], &val[1]);
 
-  return oci8_lob_seek(2,  val, VALUE self)
+  return oci8_lob_seek(2,  val, self);
 }
 #endif
 
@@ -633,11 +633,11 @@ static VALUE oci8_lob_read(int argc, VALUE *argv, VALUE self)
 }
 
 #ifdef MRUBY_H
-static mrb_value mrb_oci8_lob_read(mrb_value self)
+static mrb_value mrb_oci8_lob_read(mrb_state *mrb, mrb_value self)
 {
-  mrb_value argv;
-  int argc = mrb_scan_args("|i", &argv);
-  return oci8_lob_read(argc, &argv, VALUE self)
+  mrb_value argv[1];
+  int argc = mrb_get_args(mrb, "|i", &argv[0]);
+  return oci8_lob_read(argc, argv, self);
 }
 #endif
 
@@ -675,6 +675,16 @@ static VALUE oci8_lob_write(VALUE self, VALUE data)
     return UINT2NUM(amt);
 }
 
+#ifdef MRUBY_H
+static VALUE mrb_oci8_lob_write(mrb_state *mrb, VALUE self)
+{
+  VALUE	data;
+  
+  mrb_get_args(mrb, "o", &data)
+
+  return oci8_lob_write(self, data)
+}
+#endif
 /*
  *  @deprecated I'm not sure that this is what the name indicates.
  *  @private

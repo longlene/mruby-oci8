@@ -5,9 +5,10 @@
 
 #include "mruby.h"
 #include "mruby/array.h"
-#include "mruby/string.h"
+#include "mruby/class.h"
 #include "mruby/data.h"
 #include "mruby/hash.h"
+#include "mruby/string.h"
 
 /* The interpreter state global */
 
@@ -17,6 +18,7 @@ extern mrb_state *mrb;
 #define ID mrb_sym
 
 #define NORETURN(x) x
+#define OBJ_TAINT(x)
 
 /* Constants */
 
@@ -51,6 +53,7 @@ extern mrb_state *mrb;
 
 #define rb_external_str_new_with_enc(buf, buflen, enc) mrb_str_new(mrb, buf, buflen)
 #define rb_str_new(buf,len) mrb_str_new(mrb, buf, len)
+#define rb_obj_as_string(value) mrb_obj_as_string(mrb, value)
 
 #define StringValue(v) (v = mrb_string_value(mrb,&v))
 #define SafeStringValue(v) (v = mrb_string_value(mrb,&v))
@@ -66,7 +69,7 @@ extern mrb_state *mrb;
 #define rb_ary_store(ary, idx, val) mrb_ary_set(mrb, ary, idx, val)
 #define rb_ary_new() mrb_ary_new(mrb)
 #define rb_ary_push(a, b) mrb_ary_push(mrb, a, b)
-#define rb_ary_join(a, b) mrb_ary_concat(mrb, a, b)
+#define rb_ary_join(a, b) a; mrb_ary_concat(mrb, a, b)
 
 /* Hashes */
 
@@ -74,16 +77,19 @@ extern mrb_state *mrb;
 
 /* Exceptions */
 
-#define rb_raise(a,b, ...) mrb_raisef(mrb,a,b, ##__VA_ARGS__)
+/* Ruby needs the class object, MRuby the class data struct */
 
-#define rb_eArgError E_ARGUMENT_ERROR 
-#define rb_eRuntimeError E_RUNTIME_ERROR 
-#define rb_eTypeError E_TYPE_ERROR 
+#define rb_raise(a,b, ...) mrb_raisef(mrb, mrb_class(mrb, a), b, ##__VA_ARGS__)
+
+#define rb_eArgError mrb_obj_value(E_ARGUMENT_ERROR)
+#define rb_eRuntimeError mrb_obj_value(E_RUNTIME_ERROR)
+#define rb_eTypeError mrb_obj_value(E_TYPE_ERROR)
 
 /* Types */
 
 #define T_HASH MRB_TT_HASH
 #define T_ARRAY MRB_TT_ARRAY
+#define T_STRING MRB_TT_STRING
 #define TYPE(p) mrb_type(p)
 
 #define Check_Type(p,t) mrb_check_type(mrb, p, t)

@@ -19,6 +19,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <assert.h>
 
 #ifdef __cplusplus
@@ -108,6 +109,9 @@ typedef struct OCICPool OCICPool;
 #define RB_NE(a,b) !mrb_equal(mrb,a,b)
 
 #define rb_usascii_str_new(ptr, len) mrb_str_new(mrb, (ptr), (len))
+#define rb_enc_associate(str, enc) do {} while(0)
+#define rb_str_conv_enc(str, from, to) (str)
+#define rb_str_export_to_enc(str, enc) (str)
 
 #else
 
