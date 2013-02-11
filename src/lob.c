@@ -222,11 +222,17 @@ static VALUE oci8_lob_close(VALUE self)
     oci8_base_free(DATA_PTR(self));
     return self;
 }
+#ifdef MRUBY_H
+static mrb_value mrb_oci8_lob_close(mrb_state *mrb, mrb_value self)
+{
+  return oci8_lob_close(self);
+}
+#endif
 
 static VALUE oci8_lob_do_initialize(int argc, VALUE *argv, VALUE self, ub1 csfrm, ub1 lobtype)
 {
     oci8_lob_t *lob = DATA_PTR(self);
-    VALUE svc;
+    VALUE svc = Qnil;
     VALUE val;
     sword rv;
 
@@ -308,6 +314,15 @@ static VALUE oci8_nclob_initialize(int argc, VALUE *argv, VALUE self)
     oci8_lob_do_initialize(argc, argv, self, SQLCS_NCHAR, OCI_TEMP_CLOB);
     return Qnil;
 }
+#ifdef MRUBY_H
+static mrb_value mrb_oci8_nclob_initialize(mrb_state *mrb, mrb_value self)
+{
+  /* wrap rb_scan_args(argc, argv, "11", &svc, &val); */
+  mrb_value argv[2];
+  int argc = mrb_get_args(mrb, "o|o", &argv[0], &argv[1]);
+  return oci8_nclob_initialize(argc, argv, self);
+}
+#endif
 
 /*
  *  call-seq:
@@ -331,7 +346,15 @@ static VALUE oci8_blob_initialize(int argc, VALUE *argv, VALUE self)
     oci8_lob_do_initialize(argc, argv, self, SQLCS_IMPLICIT, OCI_TEMP_BLOB);
     return Qnil;
 }
-
+#ifdef MRUBY_H
+static mrb_value mrb_oci8_blob_initialize(mrb_state *mrb, mrb_value self)
+{
+  /* wrap rb_scan_args(argc, argv, "11", &svc, &val); */
+  mrb_value argv[2];
+  int argc = mrb_get_args(mrb, "o|o", &argv[0], &argv[1]);
+  return oci8_blob_initialize(argc, argv, self);
+}
+#endif
 /*
  *  call-seq:
  *    __char_width = size
@@ -351,6 +374,14 @@ static VALUE oci8_lob_set_char_width(VALUE self, VALUE vsize)
     lob->char_width = size;
     return vsize;
 }
+#ifdef MRUBY_H
+static mrb_value mrb_oci8_lob_set_char_width(mrb_state* mrb, mrb_value self)
+{
+  mrb_value vsize;
+  mrb_get_args(mrb, "i", &vsize);
+  return oci8_lob_set_char_width(self, vsize);
+}
+#endif
 
 /*
  *  Returns +true+ when <i>self</i> is initialized.
@@ -366,6 +397,12 @@ static VALUE oci8_lob_available_p(VALUE self)
            &lob->base);
     return is_initialized ? Qtrue : Qfalse;
 }
+#ifdef MRUBY_H
+static mrb_value mrb_oci8_lob_available_p(mrb_state *mrb, mrb_value self)
+{
+  return oci8_lob_available_p(self);
+}
+#endif
 
 /*
  *  Returns the size.
@@ -378,6 +415,12 @@ static VALUE oci8_lob_get_size(VALUE self)
 {
     return UB4_TO_NUM(oci8_lob_get_length(DATA_PTR(self)));
 }
+#ifdef MRUBY_H
+static mrb_value mrb_oci8_lob_get_size(mrb_state *mrb, mrb_value self)
+{
+  return oci8_lob_get_size(self);
+}
+#endif
 
 /*
  *  Returns the current offset.
@@ -391,6 +434,12 @@ static VALUE oci8_lob_get_pos(VALUE self)
     oci8_lob_t *lob = DATA_PTR(self);
     return UB4_TO_NUM(lob->pos);
 }
+#ifdef MRUBY_H
+static mrb_value mrb_oci8_lob_get_pos(mrb_state *mrb, mrb_value self)
+{
+  return oci8_lob_get_pos(self);
+}
+#endif
 
 /*
  *  Returns true if the current offset is at end of lob.
@@ -405,6 +454,12 @@ static VALUE oci8_lob_eof_p(VALUE self)
     else
         return Qtrue;
 }
+#ifdef MRUBY_H
+static mrb_value mrb_oci8_lob_eof_p(mrb_state *mrb, mrb_value self)
+{
+  return oci8_lob_eof_p(self);
+}
+#endif
 
 /*
  *  call-seq:
@@ -423,7 +478,7 @@ static VALUE oci8_lob_eof_p(VALUE self)
 static VALUE oci8_lob_seek(int argc, VALUE *argv, VALUE self)
 {
     oci8_lob_t *lob = DATA_PTR(self);
-    VALUE position, whence;
+    VALUE position, whence = Qnil;
 
     rb_scan_args(argc, argv, "11", &position, &whence);
     if (argc == 2 && (RB_NE(whence,seek_set) && RB_NE(whence,seek_cur) && RB_NE(whence,seek_end))) {
@@ -445,12 +500,10 @@ static VALUE oci8_lob_seek(int argc, VALUE *argv, VALUE self)
 }
 
 #ifdef MRUBY_H
-static VALUE mrb_oci8_lob_seek(VALUE self) 
+static mrb_value mrb_oci8_lob_seek(mrb_state *mrb, mrb_value self) 
 {
   mrb_value val[2];
-
   mrb_get_args(mrb, "i|i", &val[0], &val[1]);
-
   return oci8_lob_seek(2,  val, self);
 }
 #endif
@@ -466,6 +519,12 @@ static VALUE oci8_lob_rewind(VALUE self)
     lob->pos = 0;
     return self;
 }
+#ifdef MRUBY_H
+static mrb_value mrb_oci8_lob_rewind(mrb_state *mrb, mrb_value self)
+{
+  return oci8_lob_rewind(self);
+}
+#endif
 
 /*
  *  call-seq:
@@ -486,6 +545,14 @@ static VALUE oci8_lob_truncate(VALUE self, VALUE len)
            &svcctx->base);
     return self;
 }
+#ifdef MRUBY_H
+static mrb_value mrb_oci8_lob_truncate(mrb_state* mrb, mrb_value self)
+{
+  mrb_value len;
+  mrb_get_args(mrb, "i", &len);
+  return oci8_lob_truncate(self, len);
+}
+#endif
 
 /*
  *  call-seq:
@@ -501,6 +568,14 @@ static VALUE oci8_lob_set_size(VALUE self, VALUE len)
     oci8_lob_truncate(self, len);
     return len;
 }
+#ifdef MRUBY_H
+static mrb_value mrb_oci8_lob_set_size(mrb_state* mrb, mrb_value self)
+{
+  mrb_value len;
+  mrb_get_args(mrb, "i", &len);
+  return oci8_lob_set_size(self, len);
+}
+#endif
 
 /*
  *  call-seq:
@@ -527,7 +602,7 @@ static VALUE oci8_lob_read(int argc, VALUE *argv, VALUE self)
     sword rv;
     char buf[8192];
     size_t buf_size_in_char;
-    VALUE size;
+    VALUE size = Qnil;
     VALUE v = rb_ary_new();
 
     rb_scan_args(argc, argv, "01", &size);
@@ -679,10 +754,8 @@ static VALUE oci8_lob_write(VALUE self, VALUE data)
 static VALUE mrb_oci8_lob_write(mrb_state *mrb, VALUE self)
 {
   VALUE	data;
-  
-  mrb_get_args(mrb, "o", &data)
-
-  return oci8_lob_write(self, data)
+  mrb_get_args(mrb, "o", &data);
+  return oci8_lob_write(self, data);
 }
 #endif
 /*
@@ -694,6 +767,12 @@ static VALUE oci8_lob_get_sync(VALUE self)
     oci8_lob_t *lob = DATA_PTR(self);
     return (lob->state == S_NO_OPEN_CLOSE) ? Qtrue : Qfalse;
 }
+#ifdef MRUBY_H
+static mrb_value mrb_oci8_lob_get_sync(mrb_state *mrb, mrb_value self)
+{
+  return oci8_lob_get_sync(self);
+}
+#endif
 
 /*
  *  @deprecated I'm not sure that this is what the name indicates.
@@ -711,6 +790,14 @@ static VALUE oci8_lob_set_sync(VALUE self, VALUE b)
     }
     return b;
 }
+#ifdef MRUBY_H
+static mrb_value mrb_oci8_lob_set_sync(mrb_state* mrb, mrb_value self)
+{
+  mrb_value b;
+  mrb_get_args(mrb, "o", &b);
+  return oci8_lob_set_sync(self, b);
+}
+#endif
 
 /*
  *  @deprecated I'm not sure that this is what the name indicates.
@@ -722,6 +809,12 @@ static VALUE oci8_lob_flush(VALUE self)
     lob_close(lob);
     return self;
 }
+#ifdef MRUBY_H
+static mrb_value mrb_oci8_lob_flush(mrb_state *mrb, mrb_value self)
+{
+  return oci8_lob_flush(self);
+}
+#endif
 
 /*
  *  Returns the chunk size of a LOB.
@@ -739,6 +832,12 @@ static VALUE oci8_lob_get_chunk_size(VALUE self)
            &svcctx->base);
     return UINT2NUM(len);
 }
+#ifdef MRUBY_H
+static mrb_value mrb_oci8_lob_get_chunk_size(mrb_state *mrb, mrb_value self)
+{
+  return oci8_lob_get_chunk_size(self);
+}
+#endif
 
 static VALUE oci8_lob_clone(VALUE self)
 {
@@ -830,7 +929,7 @@ static void oci8_bfile_set_name(VALUE self, VALUE dir_alias, VALUE filename)
 static VALUE oci8_bfile_initialize(int argc, VALUE *argv, VALUE self)
 {
     oci8_lob_t *lob = DATA_PTR(self);
-    VALUE svc;
+    VALUE svc = Qnil;
     VALUE dir_alias;
     VALUE filename;
     int rv;
@@ -863,8 +962,8 @@ static VALUE mrb_oci8_bfile_initialize(mrb_state *mrb, VALUE self)
   mrb_value argv[3];
   mrb_int argc;
 
-  argc = mrb_get_args(mrb, "o|SS", &argv[0], &argv[1], &argv[2])
-  return oci8_bfile_initialize(argc, argv, VALUE self)
+  argc = mrb_get_args(mrb, "o|SS", &argv[0], &argv[1], &argv[2]);
+  return oci8_bfile_initialize(argc, argv, self);
 }
 #endif
 /*
@@ -879,6 +978,12 @@ static VALUE oci8_bfile_get_dir_alias(VALUE self)
     oci8_bfile_get_name(self, &dir_alias, NULL);
     return dir_alias;
 }
+#ifdef MRUBY_H
+static mrb_value mrb_oci8_bfile_get_dir_alias(mrb_state *mrb, mrb_value self)
+{
+  return oci8_bfile_get_dir_alias(self);
+}
+#endif
 
 /*
  *  Returns the file name.
@@ -892,6 +997,12 @@ static VALUE oci8_bfile_get_filename(VALUE self)
     oci8_bfile_get_name(self, NULL, &filename);
     return filename;
 }
+#ifdef MRUBY_H
+static mrb_value mrb_oci8_bfile_get_filename(mrb_state *mrb, mrb_value self)
+{
+  return oci8_bfile_get_filename(self);
+}
+#endif
 
 /*
  *  call-seq:
@@ -911,6 +1022,14 @@ static VALUE oci8_bfile_set_dir_alias(VALUE self, VALUE dir_alias)
     rb_ivar_set(self, id_dir_alias, dir_alias);
     return dir_alias;
 }
+#ifdef MRUBY_H
+static mrb_value mrb_oci8_bfile_set_dir_alias(mrb_state* mrb, mrb_value self)
+{
+  mrb_value dir_alias;
+  mrb_get_args(mrb, "S", &dir_alias);
+  return oci8_bfile_set_dir_alias(self, dir_alias);
+}
+#endif
 
 /*
  *  call-seq:
@@ -930,6 +1049,14 @@ static VALUE oci8_bfile_set_filename(VALUE self, VALUE filename)
     rb_ivar_set(self, id_filename, filename);
     return filename;
 }
+#ifdef MRUBY_H
+static mrb_value mrb_oci8_bfile_set_filename(mrb_state* mrb, mrb_value self)
+{
+  mrb_value filename;
+  mrb_get_args(mrb, "S", &filename);
+  return oci8_bfile_set_filename(self, filename);
+}
+#endif
 
 /*
  *  Returns <code>true</code> when the BFILE exists on the server's operating system.
@@ -946,6 +1073,12 @@ static VALUE oci8_bfile_exists_p(VALUE self)
            &svcctx->base);
     return flag ? Qtrue : Qfalse;
 }
+#ifdef MRUBY_H
+static mrb_value mrb_oci8_bfile_exists_p(mrb_state *mrb, mrb_value self)
+{
+  return oci8_bfile_exists_p(self);
+}
+#endif
 
 /*
  *  Document-method: OCI8::BFILE#truncate
@@ -983,7 +1116,14 @@ static VALUE oci8_bfile_exists_p(VALUE self)
 static VALUE oci8_bfile_error(VALUE self, VALUE dummy)
 {
     rb_raise(rb_eRuntimeError, "cannot modify a read-only BFILE object");
+    return Qnil;
 }
+#ifdef MRUBY_H
+static mrb_value mrb_oci8_bfile_error(mrb_state* mrb, mrb_value self)
+{
+  return oci8_bfile_error(self, Qnil);
+}
+#endif
 
 /*
  * bind_clob/blob/bfile

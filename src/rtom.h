@@ -6,9 +6,11 @@
 #include "mruby.h"
 #include "mruby/array.h"
 #include "mruby/class.h"
+#include "mruby/compile.h"
 #include "mruby/data.h"
 #include "mruby/hash.h"
 #include "mruby/string.h"
+#include "mruby/variable.h"
 
 /* The interpreter state global */
 
@@ -96,6 +98,10 @@ extern mrb_state *mrb;
 
 /* Language Features */
 
+#define rb_eval_string(s) mrb_load_string(mrb, s)
+#define rb_ivar_get(objval,sym) mrb_iv_get(mrb, objval, sym)
+#define rb_ivar_set(objval,sym,val) mrb_iv_set(mrb, objval, sym, val)
+
 /* can't find the equivalent in MRuby so this does both functions */
 /* this is not equivalent and should be fixed !!! */
 
@@ -116,6 +122,10 @@ extern mrb_state *mrb;
 /* take a value returns a value */
 #define CLASS_OF(k) mrb_class_path(mrb, mrb_obj_class(mrb, k))
 
+/* Defining Ruby types */
+
+#define rb_define_class_under(o,name,k) mrb_obj_value(mrb_define_class_under(mrb, mrb_obj_class(mrb,o),name,mrb_obj_class(mrb,k)))
+
 /* Because C functions to be called from Ruby don't now contain the args
  * new ones must be written prefixed by mrb_. This macro converts calls.
  */
@@ -123,5 +133,7 @@ extern mrb_state *mrb;
 
 /* since the format lists don't match, and the call sequence is different do this manually */
 #define rb_scan_args(argc,argv,fmt, ...)
+
+#define rb_define_alias(k,n1,n2) mrb_define_alias(mrb, mrb_obj_class(mrb,k), n1, n2)
 
 #endif /* RUBY_RTOM_h */
