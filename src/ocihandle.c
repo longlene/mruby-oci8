@@ -81,7 +81,7 @@ static VALUE oci8_s_allocate(VALUE klass)
     superklass = klass;
     while (!RTEST(rb_ivar_defined(superklass, oci8_id_oci8_vtable))) {
         superklass = rb_class_superclass(superklass);
-        if (superklass == rb_cObject)
+        if (RB_EQ(superklass,rb_cObject))
             rb_raise(rb_eRuntimeError, "private method `new' called for %s:Class", rb_class2name(klass));
     }
     obj = rb_ivar_get(superklass, oci8_id_oci8_vtable);

@@ -42,6 +42,7 @@ extern mrb_state *mrb;
 
 /* Conversions Ruby->C */
 
+#define NUM2LONG(x) mrb_fixnum(x)
 #define NUM2INT(x) mrb_fixnum(x)
 #define NUM2UINT(x) (unsigned)mrb_fixnum(x)
 #define RFLOAT_VALUE(x) mrb_float(x)
@@ -86,6 +87,8 @@ extern mrb_state *mrb;
 #define rb_eArgError mrb_obj_value(E_ARGUMENT_ERROR)
 #define rb_eRuntimeError mrb_obj_value(E_RUNTIME_ERROR)
 #define rb_eTypeError mrb_obj_value(E_TYPE_ERROR)
+#define rb_eRangeError mrb_obj_value(E_RANGE_ERROR)
+#define rb_eNameError mrb_obj_value(E_NAME_ERROR)
 
 /* Types */
 
@@ -101,6 +104,7 @@ extern mrb_state *mrb;
 #define rb_eval_string(s) mrb_load_string(mrb, s)
 #define rb_ivar_get(objval,sym) mrb_iv_get(mrb, objval, sym)
 #define rb_ivar_set(objval,sym,val) mrb_iv_set(mrb, objval, sym, val)
+#define rb_ivar_defined(objval,sym) (mrb_iv_defined(mrb, objval, sym)?mrb_true_value():mrb_false_value())
 
 /* can't find the equivalent in MRuby so this does both functions */
 /* this is not equivalent and should be fixed !!! */
@@ -116,11 +120,18 @@ extern mrb_state *mrb;
 
 #define rb_define_private_method(k,n,f,a) rb_define_method(k,n,f,a)
 
-#define rb_obj_is_kind_of(o,k) mrb_obj_is_kind_of(mrb, o, mrb_obj_class(mrb, k))
+/* Types */
+#define rb_cObject mrb_obj_value(mrb->object_class)
 
+/* Class introspection */
+
+#define rb_obj_is_kind_of(o,k) mrb_obj_is_kind_of(mrb, o, mrb_obj_class(mrb, k))
 #define rb_class2name(k) mrb_obj_classname(mrb, k)
+
 /* take a value returns a value */
 #define CLASS_OF(k) mrb_class_path(mrb, mrb_obj_class(mrb, k))
+
+#define rb_class_superclass(k) mrb_obj_value(RCLASS_SUPER(k))
 
 /* Defining Ruby types */
 
