@@ -30,15 +30,25 @@ extern mrb_state *mrb;
 
 /* Predicates */
 
-#define RTEST(v) mrb_nil_p(v)
+#define RTEST(v) mrb_test(v)
 #define NIL_P(x) mrb_nil_p(x)
 #define FIXNUM_P(x) mrb_fixnum_p(x)
+
+/* Unimplemented Conversions */
+
+#define ULL2NUM(x) (mrb_raise(mrb, E_RUNTIME_ERROR, "ULL2NUM not implemented"), Qnil)
+#define LL2NUM(x) (mrb_raise(mrb, E_RUNTIME_ERROR, "LL2NUM not implemented"), Qnil)
+#define NUM2ULL(x) (mrb_raise(mrb, E_RUNTIME_ERROR, "NUM2ULL not implemented"), 0)
+#define NUM2LL(x) (mrb_raise(mrb, E_RUNTIME_ERROR, "NUM2LL not implemented"), 0)
 
 /* Conversions C->Ruby */
 
 #define INT2FIX(x) mrb_fixnum_value(x)
 #define UINT2NUM(x) mrb_fixnum_value(x)
+#define INT2NUM(x) mrb_fixnum_value(x)
 #define rb_float_new(d) mrb_float_value(d)
+
+#define rb_tainted_str_new(p,l) mrb_str_new(mrb, p, l)
 
 /* Conversions Ruby->C */
 
@@ -92,6 +102,7 @@ extern mrb_state *mrb;
 
 /* Types */
 
+#define T_FIXNUM MRB_TT_FIXNUM
 #define T_HASH MRB_TT_HASH
 #define T_ARRAY MRB_TT_ARRAY
 #define T_STRING MRB_TT_STRING
@@ -134,6 +145,8 @@ extern mrb_state *mrb;
 #define rb_class_superclass(k) mrb_obj_value(RCLASS_SUPER(k))
 
 /* Defining Ruby types */
+
+#define rb_define_class(name,k) mrb_obj_value(mrb_define_class(mrb,name,mrb_obj_class(mrb,k)))
 
 #define rb_define_class_under(o,name,k) mrb_obj_value(mrb_define_class_under(mrb, mrb_obj_class(mrb,o),name,mrb_obj_class(mrb,k)))
 

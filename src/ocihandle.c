@@ -35,8 +35,17 @@ static oci8_base_vtable_t oci8_base_vtable = {
 static VALUE oci8_handle_initialize(VALUE self)
 {
     rb_raise(rb_eNameError, "private method `new' called for %s:Class", rb_class2name(CLASS_OF(self)));
+    return Qnil;
 }
 
+#ifdef RUBY_RTOM_H
+static void
+mrb_oci8_handle_free(mrb_state *mrb, void *ptr)
+{
+  oci8_base_free(ptr);
+}
+static struct mrb_data_type mrb_oci8_handle_type = { "OCI8Handle", mrb_oci8_handle_free };
+#endif
 /*
  * Clears the object internal structure and its dependents.
  *
@@ -90,7 +99,11 @@ static VALUE oci8_s_allocate(VALUE klass)
     base = xmalloc(vptr->size);
     memset(base, 0, vptr->size);
 
+#ifdef RUBY_RTOM_H
+    obj = mrb_obj_value(Data_Wrap_Struct(mrb, mrb_obj_class(mrb, klass), &mrb_oci8_handle_type, base));
+#else
     obj = Data_Wrap_Struct(klass, oci8_handle_mark, oci8_handle_cleanup, base);
+#endif
     base->self = obj;
     base->vptr = vptr;
     base->parent = NULL;
@@ -460,13 +473,13 @@ static VALUE attr_get_oradate(VALUE self, VALUE attr_type)
         ub8 dummy; /* padding for incorrect attrtype to protect the stack */
     } v;
     ub4 size = 0;
-    static VALUE cOraDate = Qnil;
+    static VALUE cOraDate = RB_QNIL;
 
     v.dummy = 0;
     Check_Type(attr_type, T_FIXNUM);
     chker2(OCIAttrGet(base->hp.ptr, base->type, &v.value, &size, FIX2INT(attr_type), oci8_errhp), base);
     if (NIL_P(cOraDate))
-        cOraDate = rb_eval_string("OraDate");
+        cOraDate = RB_CLASS("OraDate");
     return rb_funcall(cOraDate, oci8_id_new, 6,
                       INT2FIX((v.value[0] - 100) * 100 + (v.value[1] - 100)),
                       INT2FIX(v.value[2]),

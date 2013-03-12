@@ -108,12 +108,21 @@ typedef struct OCICPool OCICPool;
 #define RB_EQ(a,b) mrb_equal(mrb,a,b)
 #define RB_NE(a,b) !mrb_equal(mrb,a,b)
 
+/* an inline Qnil for initializing */
+#define RB_QNIL { {0}, MRB_TT_FALSE }
+
+#define RB_CLASS(s) mrb_obj_value(mrb_class_obj_get(mrb, s))
+
 #define rb_usascii_str_new(ptr, len) mrb_str_new(mrb, (ptr), (len))
 #define rb_enc_associate(str, enc) do {} while(0)
 #define rb_str_conv_enc(str, from, to) (str)
 #define rb_str_export_to_enc(str, enc) (str)
 
 #else
+
+#define RB_QNIL Qnil
+
+#define RB_CLASS(s) rb_eval_string(s)
 
 #define RB_EQ(a,b) (a == b)
 #define RB_NE(a,b) (a != b)
