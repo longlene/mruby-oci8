@@ -129,9 +129,7 @@ extern mrb_state *mrb;
 #define rb_gc_mark(x) mrb_gc_mark(mrb,mrb_basic(x))
 
 
-#define rb_define_private_method(k,n,f,a) rb_define_method(k,n,f,a)
-
-/* Types */
+/* Standard Classes */
 #define rb_cObject mrb_obj_value(mrb->object_class)
 
 /* Class introspection */
@@ -150,10 +148,16 @@ extern mrb_state *mrb;
 
 #define rb_define_class_under(o,name,k) mrb_obj_value(mrb_define_class_under(mrb, mrb_obj_class(mrb,o),name,mrb_obj_class(mrb,k)))
 
+#define rb_define_alloc_func(k,fn) rb_define_singleton_method(k,"new",fn,0)
+
+#define rb_define_private_method(k,n,f,a) rb_define_method(k,n,f,a)
+
 /* Because C functions to be called from Ruby don't now contain the args
  * new ones must be written prefixed by mrb_. This macro converts calls.
  */
-#define rb_define_method(klass, name, fn, argc) mrb_define_method(mrb, mrb_obj_class(mrb, klass), name, mrb_##fn, argc)
+#define rb_define_method(klass, name, fn, argc) mrb_define_method(mrb, mrb_obj_class(mrb, klass), name, mrb_##fn, ARGS_REQ(argc))
+
+#define rb_define_singleton_method(k,n,f,z) mrb_define_class_method(mrb, mrb_obj_class(mrb,k),n,mrb_##f,ARGS_REQ(z))
 
 /* since the format lists don't match, and the call sequence is different do this manually */
 #define rb_scan_args(argc,argv,fmt, ...)

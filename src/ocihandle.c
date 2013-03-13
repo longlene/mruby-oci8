@@ -32,20 +32,33 @@ static oci8_base_vtable_t oci8_base_vtable = {
     sizeof(oci8_base_t),
 };
 
+/* this is used when wrapping the vtables -  no mark or free required */
+#ifdef MRUBY_H
+static struct mrb_data_type mrb_data_type_static = { "static", 0 };
+#endif
+
 static VALUE oci8_handle_initialize(VALUE self)
 {
     rb_raise(rb_eNameError, "private method `new' called for %s:Class", rb_class2name(CLASS_OF(self)));
     return Qnil;
 }
 
-#ifdef RUBY_RTOM_H
+#ifdef MRUBY_H
+static VALUE mrb_oci8_handle_initialize(mrb_state *mrb, VALUE self)
+{
+  return oci8_handle_initialize(self);
+}
+
+#endif
+
+#ifdef MRUBY_H
 static void
 mrb_oci8_handle_free(mrb_state *mrb, void *ptr)
 {
   oci8_base_free(ptr);
 }
 static struct mrb_data_type mrb_oci8_handle_type = { "OCI8Handle", mrb_oci8_handle_free };
-#endif
+#else
 /*
  * Clears the object internal structure and its dependents.
  *
@@ -79,6 +92,7 @@ static void oci8_handle_cleanup(oci8_base_t *base)
     oci8_base_free(base);
     xfree(base);
 }
+#endif
 
 static VALUE oci8_s_allocate(VALUE klass)
 {
@@ -99,7 +113,7 @@ static VALUE oci8_s_allocate(VALUE klass)
     base = xmalloc(vptr->size);
     memset(base, 0, vptr->size);
 
-#ifdef RUBY_RTOM_H
+#ifdef MRUBY_H
     obj = mrb_obj_value(Data_Wrap_Struct(mrb, mrb_obj_class(mrb, klass), &mrb_oci8_handle_type, base));
 #else
     obj = Data_Wrap_Struct(klass, oci8_handle_mark, oci8_handle_cleanup, base);
@@ -116,6 +130,11 @@ static VALUE oci8_s_allocate(VALUE klass)
     return obj;
 }
 
+#ifdef MRUBY_H
+static VALUE mrb_oci8_s_allocate(mrb_state *mrb, VALUE klass) {
+  return oci8_s_allocate(klass);
+}
+#endif
 /*
  * call-seq:
  *   attr_get_ub1(attr_type)
@@ -142,6 +161,14 @@ static VALUE attr_get_ub1(VALUE self, VALUE attr_type)
     return INT2FIX(v.value);
 }
 
+#ifdef MRUBY_H
+static mrb_value mrb_attr_get_ub1(mrb_state *mrb, mrb_value self) {
+  mrb_value attr_type;
+
+  mrb_get_args(mrb, "i", &attr_type);
+  return attr_get_ub1(self, attr_type);
+}
+#endif
 /*
  * call-seq:
  *   attr_get_ub2(attr_type)
@@ -168,6 +195,14 @@ static VALUE attr_get_ub2(VALUE self, VALUE attr_type)
     return INT2FIX(v.value);
 }
 
+#ifdef MRUBY_H
+static mrb_value mrb_attr_get_ub2(mrb_state *mrb, mrb_value self) {
+  mrb_value attr_type;
+
+  mrb_get_args(mrb, "i", &attr_type);
+  return attr_get_ub2(self, attr_type);
+}
+#endif
 /*
  * call-seq:
  *   attr_get_ub4(attr_type)
@@ -194,6 +229,14 @@ static VALUE attr_get_ub4(VALUE self, VALUE attr_type)
     return UINT2NUM(v.value);
 }
 
+#ifdef MRUBY_H
+static mrb_value mrb_attr_get_ub4(mrb_state *mrb, mrb_value self) {
+  mrb_value attr_type;
+
+  mrb_get_args(mrb, "i", &attr_type);
+  return attr_get_ub4(self, attr_type);
+}
+#endif
 /*
  * call-seq:
  *   attr_get_ub8(attr_type)
@@ -220,6 +263,14 @@ static VALUE attr_get_ub8(VALUE self, VALUE attr_type)
     return ULL2NUM(v.value);
 }
 
+#ifdef MRUBY_H
+static mrb_value mrb_attr_get_ub8(mrb_state *mrb, mrb_value self) {
+  mrb_value attr_type;
+
+  mrb_get_args(mrb, "i", &attr_type);
+  return attr_get_ub8(self, attr_type);
+}
+#endif
 /*
  * call-seq:
  *   attr_get_sb1(attr_type)
@@ -246,6 +297,14 @@ static VALUE attr_get_sb1(VALUE self, VALUE attr_type)
     return INT2FIX(v.value);
 }
 
+#ifdef MRUBY_H
+static mrb_value mrb_attr_get_sb1(mrb_state *mrb, mrb_value self) {
+  mrb_value attr_type;
+
+  mrb_get_args(mrb, "i", &attr_type);
+  return attr_get_sb1(self, attr_type);
+}
+#endif
 /*
  * call-seq:
  *   attr_get_sb2(attr_type)
@@ -272,6 +331,14 @@ static VALUE attr_get_sb2(VALUE self, VALUE attr_type)
     return INT2FIX(v.value);
 }
 
+#ifdef MRUBY_H
+static mrb_value mrb_attr_get_sb2(mrb_state *mrb, mrb_value self) {
+  mrb_value attr_type;
+
+  mrb_get_args(mrb, "i", &attr_type);
+  return attr_get_sb2(self, attr_type);
+}
+#endif
 /*
  * call-seq:
  *   attr_get_sb4(attr_type)
@@ -298,6 +365,14 @@ static VALUE attr_get_sb4(VALUE self, VALUE attr_type)
     return INT2NUM(v.value);
 }
 
+#ifdef MRUBY_H
+static mrb_value mrb_attr_get_sb4(mrb_state *mrb, mrb_value self) {
+  mrb_value attr_type;
+
+  mrb_get_args(mrb, "i", &attr_type);
+  return attr_get_sb4(self, attr_type);
+}
+#endif
 /*
  * call-seq:
  *   attr_get_sb8(attr_type)
@@ -324,6 +399,14 @@ static VALUE attr_get_sb8(VALUE self, VALUE attr_type)
     return LL2NUM(v.value);
 }
 
+#ifdef MRUBY_H
+static mrb_value mrb_attr_get_sb8(mrb_state *mrb, mrb_value self) {
+  mrb_value attr_type;
+
+  mrb_get_args(mrb, "i", &attr_type);
+  return attr_get_sb8(self, attr_type);
+}
+#endif
 /*
  * call-seq:
  *   attr_get_boolean(attr_type)
@@ -350,6 +433,14 @@ static VALUE attr_get_boolean(VALUE self, VALUE attr_type)
     return v.value ? Qtrue : Qfalse;
 }
 
+#ifdef MRUBY_H
+static mrb_value mrb_attr_get_boolean(mrb_state *mrb, mrb_value self) {
+  mrb_value attr_type;
+
+  mrb_get_args(mrb, "i", &attr_type);
+  return attr_get_boolean(self, attr_type);
+}
+#endif
 /*
  * call-seq:
  *   attr_get_string(attr_type)
@@ -382,6 +473,14 @@ static VALUE attr_get_string(VALUE self, VALUE attr_type)
     return rb_external_str_new_with_enc(v.value, size, oci8_encoding);
 }
 
+#ifdef MRUBY_H
+static mrb_value mrb_attr_get_string(mrb_state *mrb, mrb_value self) {
+  mrb_value attr_type;
+
+  mrb_get_args(mrb, "i", &attr_type);
+  return attr_get_string(self, attr_type);
+}
+#endif
 /*
  * call-seq:
  *   attr_get_binary(attr_type)
@@ -413,6 +512,14 @@ static VALUE attr_get_binary(VALUE self, VALUE attr_type)
     return rb_tainted_str_new(v.value, size);
 }
 
+#ifdef MRUBY_H
+static mrb_value mrb_attr_get_binary(mrb_state *mrb, mrb_value self) {
+  mrb_value attr_type;
+
+  mrb_get_args(mrb, "i", &attr_type);
+  return attr_get_binary(self, attr_type);
+}
+#endif
 /*
  * call-seq:
  *   attr_get_integer(attr_type) -> integer
@@ -449,6 +556,14 @@ static VALUE attr_get_integer(VALUE self, VALUE attr_type)
     return oci8_make_integer(&onum, oci8_errhp);
 }
 
+#ifdef MRUBY_H
+static mrb_value mrb_attr_get_integer(mrb_state *mrb, mrb_value self) {
+  mrb_value attr_type;
+
+  mrb_get_args(mrb, "i", &attr_type);
+  return attr_get_integer(self, attr_type);
+}
+#endif
 /*
  * call-seq:
  *   attr_get_oradate(attr_type) -> an OraDate
@@ -489,6 +604,14 @@ static VALUE attr_get_oradate(VALUE self, VALUE attr_type)
                       INT2FIX(v.value[6] - 1));
 }
 
+#ifdef MRUBY_H
+static mrb_value mrb_attr_get_oradate(mrb_state *mrb, mrb_value self) {
+  mrb_value attr_type;
+
+  mrb_get_args(mrb, "i", &attr_type);
+  return attr_get_oradate(self, attr_type);
+}
+#endif
 /*
  * call-seq:
  *   attr_set_ub1(attr_type, attr_value)
@@ -518,6 +641,14 @@ static VALUE attr_set_ub1(VALUE self, VALUE attr_type, VALUE val)
     return self;
 }
 
+#ifdef MRUBY_H
+static mrb_value mrb_attr_set_ub1(mrb_state *mrb, mrb_value self) {
+  mrb_value attr_type, attr_value;
+
+  mrb_get_args(mrb, "ii", &attr_type, &attr_value);
+  return attr_set_ub1(self, attr_type, attr_value);
+}
+#endif
 /*
  * call-seq:
  *   attr_set_ub2(attr_type, attr_value)
@@ -547,6 +678,14 @@ static VALUE attr_set_ub2(VALUE self, VALUE attr_type, VALUE val)
     return self;
 }
 
+#ifdef MRUBY_H
+static mrb_value mrb_attr_set_ub2(mrb_state *mrb, mrb_value self) {
+  mrb_value attr_type, attr_value;
+
+  mrb_get_args(mrb, "ii", &attr_type, &attr_value);
+  return attr_set_ub2(self, attr_type, attr_value);
+}
+#endif
 /*
  * call-seq:
  *   attr_set_ub4(attr_type, attr_value)
@@ -576,6 +715,14 @@ static VALUE attr_set_ub4(VALUE self, VALUE attr_type, VALUE val)
     return self;
 }
 
+#ifdef MRUBY_H
+static mrb_value mrb_attr_set_ub4(mrb_state *mrb, mrb_value self) {
+  mrb_value attr_type, attr_value;
+
+  mrb_get_args(mrb, "ii", &attr_type, &attr_value);
+  return attr_set_ub4(self, attr_type, attr_value);
+}
+#endif
 /*
  * call-seq:
  *   attr_set_ub8(attr_type, attr_value)
@@ -605,6 +752,14 @@ static VALUE attr_set_ub8(VALUE self, VALUE attr_type, VALUE val)
     return self;
 }
 
+#ifdef MRUBY_H
+static mrb_value mrb_attr_set_ub8(mrb_state *mrb, mrb_value self) {
+  mrb_value attr_type, attr_value;
+
+  mrb_get_args(mrb, "ii", &attr_type, &attr_value);
+  return attr_set_ub8(self, attr_type, attr_value);
+}
+#endif
 /*
  * call-seq:
  *   attr_set_sb1(attr_type, attr_value)
@@ -634,6 +789,14 @@ static VALUE attr_set_sb1(VALUE self, VALUE attr_type, VALUE val)
     return self;
 }
 
+#ifdef MRUBY_H
+static mrb_value mrb_attr_set_sb1(mrb_state *mrb, mrb_value self) {
+  mrb_value attr_type, attr_value;
+
+  mrb_get_args(mrb, "ii", &attr_type, &attr_value);
+  return attr_set_sb1(self, attr_type, attr_value);
+}
+#endif
 /*
  * call-seq:
  *   attr_set_sb2(attr_type, attr_value)
@@ -663,6 +826,14 @@ static VALUE attr_set_sb2(VALUE self, VALUE attr_type, VALUE val)
     return self;
 }
 
+#ifdef MRUBY_H
+static mrb_value mrb_attr_set_sb2(mrb_state *mrb, mrb_value self) {
+  mrb_value attr_type, attr_value;
+
+  mrb_get_args(mrb, "ii", &attr_type, &attr_value);
+  return attr_set_sb2(self, attr_type, attr_value);
+}
+#endif
 /*
  * call-seq:
  *   attr_set_sb4(attr_type, attr_value)
@@ -692,6 +863,14 @@ static VALUE attr_set_sb4(VALUE self, VALUE attr_type, VALUE val)
     return self;
 }
 
+#ifdef MRUBY_H
+static mrb_value mrb_attr_set_sb4(mrb_state *mrb, mrb_value self) {
+  mrb_value attr_type, attr_value;
+
+  mrb_get_args(mrb, "ii", &attr_type, &attr_value);
+  return attr_set_sb4(self, attr_type, attr_value);
+}
+#endif
 /*
  * call-seq:
  *   attr_set_sb8(attr_type, attr_value)
@@ -721,6 +900,14 @@ static VALUE attr_set_sb8(VALUE self, VALUE attr_type, VALUE val)
     return self;
 }
 
+#ifdef MRUBY_H
+static mrb_value mrb_attr_set_sb8(mrb_state *mrb, mrb_value self) {
+  mrb_value attr_type, attr_value;
+
+  mrb_get_args(mrb, "ii", &attr_type, &attr_value);
+  return attr_set_sb8(self, attr_type, attr_value);
+}
+#endif
 /*
  * call-seq:
  *   attr_set_boolean(attr_type, attr_value)
@@ -750,6 +937,14 @@ static VALUE attr_set_boolean(VALUE self, VALUE attr_type, VALUE val)
     return self;
 }
 
+#ifdef MRUBY_H
+static mrb_value mrb_attr_set_boolean(mrb_state *mrb, mrb_value self) {
+  mrb_value attr_type, attr_value;
+
+  mrb_get_args(mrb, "io", &attr_type, &attr_value);
+  return attr_set_boolean(self, attr_type, attr_value);
+}
+#endif
 /*
  * call-seq:
  *   attr_set_string(attr_type, attr_value)
@@ -777,6 +972,14 @@ static VALUE attr_set_string(VALUE self, VALUE attr_type, VALUE val)
     return self;
 }
 
+#ifdef MRUBY_H
+static mrb_value mrb_attr_set_string(mrb_state *mrb, mrb_value self) {
+  mrb_value attr_type, attr_value;
+
+  mrb_get_args(mrb, "iS", &attr_type, &attr_value);
+  return attr_set_string(self, attr_type, attr_value);
+}
+#endif
 /*
  * call-seq:
  *   attr_set_binary(attr_type, attr_value)
@@ -802,6 +1005,14 @@ static VALUE attr_set_binary(VALUE self, VALUE attr_type, VALUE val)
     return self;
 }
 
+#ifdef MRUBY_H
+static mrb_value mrb_attr_set_binary(mrb_state *mrb, mrb_value self) {
+  mrb_value attr_type, attr_value;
+
+  mrb_get_args(mrb, "iS", &attr_type, &attr_value);
+  return attr_set_binary(self, attr_type, attr_value);
+}
+#endif
 /*
  * call-seq:
  *   attr_set_integer(attr_type, number)
@@ -830,6 +1041,14 @@ static VALUE attr_set_integer(VALUE self, VALUE attr_type, VALUE val)
     return self;
 }
 
+#ifdef MRUBY_H
+static mrb_value mrb_attr_set_integer(mrb_state *mrb, mrb_value self) {
+  mrb_value attr_type, attr_value;
+
+  mrb_get_args(mrb, "ii", &attr_type, &attr_value);
+  return attr_set_integer(self, attr_type, attr_value);
+}
+#endif
 void Init_oci8_handle(void)
 {
     VALUE obj;
@@ -844,8 +1063,14 @@ void Init_oci8_handle(void)
     oci8_cOCIHandle = rb_define_class("OCIHandle", rb_cObject);
     rb_define_alloc_func(oci8_cOCIHandle, oci8_s_allocate);
     rb_define_method_nodoc(oci8_cOCIHandle, "initialize", oci8_handle_initialize, 0);
+#ifndef MRUBY_H
     rb_define_private_method(oci8_cOCIHandle, "free", oci8_handle_free, 0);
+#endif
+#ifdef MRUBY_H
+    obj = mrb_obj_value(mrb_data_object_alloc(mrb, mrb->object_class, &oci8_base_vtable, &mrb_data_type_static));
+#else
     obj = Data_Wrap_Struct(rb_cObject, 0, 0, &oci8_base_vtable);
+#endif
     rb_ivar_set(oci8_cOCIHandle, oci8_id_oci8_vtable, obj);
 
     /* methods to get attributes */
