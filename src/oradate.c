@@ -71,11 +71,30 @@ static void oci8_set_ora_date(ora_date_t *od, int year, int month, int day, int 
     Set_second(od, second);
 }
 
+#ifdef MRUBY_H
+static inline void mrb_ora_date_free(mrb_state *mrb, void *p)
+{
+  mrb_free(mrb, p);
+}
+static struct mrb_data_type mrb_ora_date_type = { "OraDate", mrb_ora_date_free };
+
+static VALUE mrb_ora_date_s_allocate(mrb_state *mrb, VALUE klass)
+{
+    ora_date_t *od;
+    struct RData *data;
+    //Data_Make_Struct(mrb, klass, ora_date_t, &mrb_ora_date_type, od, data);
+    od = mrb_malloc(mrb, sizeof(ora_date_t));
+    { static const ora_date_t zero = { 0 }; *od = zero; }
+    data = Data_Wrap_Struct(mrb,mrb_obj_class(mrb,klass),&mrb_ora_date_type,od);
+    return mrb_obj_value(data);
+}
+#else
 static VALUE ora_date_s_allocate(VALUE klass)
 {
     ora_date_t *od;
     return Data_Make_Struct(klass, ora_date_t, NULL, xfree, od);
 }
+#endif
 
 /*
  *  call-seq:
@@ -149,9 +168,16 @@ static VALUE ora_date_initialize_copy(VALUE lhs, VALUE rhs)
 {
     ora_date_t *l, *r;
 
+#ifdef MRUBY_H
+    mrb_value super = mrb_obj_value(RCLASS_SUPER(lhs));
+    mrb_funcall_argv(mrb, super, mrb->init_sym, 1, &rhs);
+    Data_Get_Struct(mrb, lhs, &mrb_ora_date_type, l);
+    Data_Get_Struct(mrb, rhs, &mrb_ora_date_type, r);
+#else
     rb_call_super(1, &rhs);
     Data_Get_Struct(lhs, ora_date_t, l);
     Data_Get_Struct(rhs, ora_date_t, r);
+#endif
     memcpy(l, r, sizeof(ora_date_t));
     return lhs;
 }
@@ -164,7 +190,11 @@ static VALUE ora_date_initialize_copy(VALUE lhs, VALUE rhs)
  */
 static VALUE ora_date_s_now(int argc, VALUE *argv, VALUE klass)
 {
+#ifdef MRUBY_H
+    VALUE obj = mrb_ora_date_s_allocate(mrb, klass);
+#else
     VALUE obj = ora_date_s_allocate(klass);
+#endif
     ora_date_t *od = DATA_PTR(obj);
     time_t tm = time(0);
     int year, month, day, hour, min, sec;

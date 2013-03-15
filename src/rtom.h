@@ -41,6 +41,8 @@ extern mrb_state *mrb;
 #define NUM2ULL(x) (mrb_raise(mrb, E_RUNTIME_ERROR, "NUM2ULL not implemented"), 0)
 #define NUM2LL(x) (mrb_raise(mrb, E_RUNTIME_ERROR, "NUM2LL not implemented"), 0)
 
+#define RB_GC_GUARD(v) _Pragma ("Understand RB_GC_GUARD!")
+
 /* Conversions C->Ruby */
 
 #define INT2FIX(x) mrb_fixnum_value(x)
